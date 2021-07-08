@@ -19,15 +19,18 @@ fn main() -> ! {
     rtt_init_print!();
     let p = hal::pac::Peripherals::take().unwrap();
     let port0 = hal::gpio::p0::Parts::new(p.P0);
-    let button = port0.p0_13.into_pullup_input();
-    let mut led = port0.p0_17.into_push_pull_output(Level::Low);
+    //let button = port0.p0_13.into_pullup_input();
+    let mut led = port0.p0_24.into_push_pull_output(Level::Low);
+    let mut on = true;
 
     rprintln!("Blinky button demo starting");
     loop {
-        if button.is_high().unwrap() {
+        if on {
             led.set_high().unwrap();
         } else {
             led.set_low().unwrap();
         }
+        on = ! on;
+        cortex_m::asm::delay(32_000_000);
     }
 }

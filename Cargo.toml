@@ -1,5 +1,5 @@
 [package]
-name = "blinky-button-demo"
+name = "blinky-demo"
 version = "0.1.0"
 authors = ["Andres O. Vela"]
 edition = "2018"
@@ -10,7 +10,7 @@ edition = "2018"
 cortex-m = "0.6.2"
 cortex-m-rt = "0.6.12"
 rtt-target = {version = "0.2.0", features = ["cortex-m"] }
-nrf52832-hal = { features = ["rt"], path = "../../nrf52832-hal" }
+nrf52832-hal = { version = "0.12.2", features = ["rt"] }
 
 [dependencies.embedded-hal]
 version = "0.2.3"
