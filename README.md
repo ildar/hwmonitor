@@ -1,18 +1,8 @@
-# Blinky button demo
+# HW monitor firmware
 
-This example turns on LED 1 when you press Button 1 on the nrf52-dk (PCA10040).
+for nRF52 MCUs.
 
-## Set up with `cargo-embed`
+## Features
 
-Install `cargo-embed` if you don't have it already:
-
-```console
-$ cargo install cargo-embed
-```
-
-Then just `cd` to the example folder and run
-
-```console
-$ cargo embed --target thumbv7em-none-eabihf
-```
+* check MCU basic functions on startup (RTT)
 

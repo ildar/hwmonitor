@@ -5,7 +5,7 @@ use embedded_hal::digital::v2::InputPin;
 use embedded_hal::digital::v2::OutputPin;
 use nrf52832_hal as hal;
 use nrf52832_hal::gpio::Level;
-use rtt_target::{rprintln, rtt_init_print};
+use rtt_target::{rprint, rprintln, rtt_init_print};
 
 #[panic_handler] // panicking behavior
 fn panic(_: &core::panic::PanicInfo) -> ! {
@@ -23,7 +23,7 @@ fn main() -> ! {
     let mut led = port0.p0_24.into_push_pull_output(Level::Low);
     let mut on = true;
 
-    rprintln!("Blinky button demo starting");
+    rprintln!("HW monitor demo starting");
     loop {
         if on {
             led.set_high().unwrap();
@@ -31,6 +31,7 @@ fn main() -> ! {
             led.set_low().unwrap();
         }
         on = ! on;
+        rprint!(".");
         cortex_m::asm::delay(32_000_000);
     }
 }
