@@ -29,15 +29,25 @@ fn main() -> ! {
             }
         };
     set_print_channel(rtt_channels.up.0);
+
+    let mut buf_pos = 0;
     let mut buf = [0u8; 255];
     let mut cmd_channel = rtt_channels.down.0;
 
     initial_diags();
     loop {
-        let bufn = cmd_channel.read(&mut buf);
-        if bufn > 0 {
-            rprint!("{}", buf[0] as char);
-        } else {
+        let bufn = cmd_channel.read(&mut buf[buf_pos..]);
+        buf_pos += bufn;
+        let mut cmd_end = 0;
+        for (i,&c) in buf[..buf_pos].iter().enumerate() {
+            if c == b'\n' {cmd_end=i; break;};
+        };
+        if cmd_end > 0 {
+            rprint!("{{{}}}", cmd_end);
+            //run_cmd(&buf[..cmd_end]);
+            buf_pos = 0; //FIXME: dropping the rest of the RTT input
+        };
+        if bufn == 0 {
             rprint!(".");
             cortex_m::asm::delay(32_000_000);
         };
