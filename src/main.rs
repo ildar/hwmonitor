@@ -48,7 +48,8 @@ fn main() -> ! {
             if c == b'\n' { cmd_end = i; break; };
         }
         if cmd_end > 0 {
-            //exec_context.execute(&buf[..cmd_end]);
+            // FIXME: rprint!(&buf[..cmd_end]); // echo
+            exec_context.execute(&buf[..cmd_end]);
             buf_pos = 0; //FIXME: dropping the rest of the RTT input
         };
         if bufn == 0 {
