@@ -54,7 +54,7 @@ fn main() -> ! {
         };
         if bufn == 0 {
             exec_context.idle();
-            cortex_m::asm::delay(32_000_000);
+            cortex_m::asm::delay(1_000_000);
         };
     }
 }
