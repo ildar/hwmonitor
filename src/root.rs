@@ -61,7 +61,7 @@ pub fn idle() {
 
 fn hexdump(s: &[u8]) {
     let res = parse_px(s, (0,16));
-    if res == None { rprintln!("Failed to parse `px` command"); return; }
+    if res.is_err() { rprintln!("Failed to parse `px` command"); return; }
     let (start, count) = res.unwrap();
     rprint!("0x{:08x} ", start);
     for i in 0..count {
