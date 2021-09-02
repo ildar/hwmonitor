@@ -1,11 +1,22 @@
-use hex;
-
 pub fn parse_address(s: &[u8]) -> Result<u32,&[u8]> {
-    let mut start = [0u8;4];
-    if hex::decode_to_slice(s, &mut start).is_err() {
-        return Err(b"can't decode addr");
-    };
-    Ok(u32::from_be_bytes(start))
+    let mode_is_hex = if s.starts_with(b"0x") { true } else { false };
+    match mode_is_hex {
+        false => { // decimal
+            let temp = core::str::from_utf8(s);
+            if temp.is_err() { return Err(b"Unknown str convertion error") };
+            let temp = u32::from_str_radix(temp.unwrap(), 10);
+            if temp.is_err() { return Err(b"Convertion error") };
+            Ok(temp.unwrap())
+        },
+        true => { // hexadecimal
+            let s = &s[2..]; // cut "0x"
+            let temp = core::str::from_utf8(s);
+            if temp.is_err() { return Err(b"Unknown str convertion error") };
+            let temp = u32::from_str_radix(temp.unwrap(), 16);
+            if temp.is_err() { return Err(b"Convertion error") };
+            Ok(temp.unwrap())
+        },
+    }
 }
 
 // generally, command parsed: "px {} @{}"
