@@ -38,13 +38,12 @@ pub fn print_menu() {
         "Main menu: \n",
         "  h or ?: \tprint this menu prompt \n",
         "  r: \t return to main menu \n",
-        "  px N @addr_in_hex: \t hexdump of N bytes at(@) address \n",
-        "    example: px 4 @00072000 \n",
-        "    WARNING: address is exactly 8 hex-digits! \n",
+        "  px N @addr: \t hexdump of N bytes at(@) address \n",
+        "    example: px 4 @0x72000 \n",
         "\n> "));
 }
 
-pub fn execute(s: &[u8], context: &mut ExecContext) {
+pub fn execute(s: &[u8], _context: &mut ExecContext) {
     match s[0] {
         b'h' => print_menu(),
         b'?' => print_menu(),
@@ -60,18 +59,19 @@ pub fn idle() {
 }
 
 fn hexdump(s: &[u8]) {
-    let res = parse_px(s, (0,16));
+    let res = parse_px(s, (256,0x0));
     if res.is_err() { rprintln!("Failed to parse `px` command"); return; }
-    let (start, count) = res.unwrap();
-    rprint!("0x{:08x} ", start);
+    let (count, start) = res.unwrap();
     for i in 0..count {
+        if i%16 == 0 { rprint!("\n0x{:08x} ", start+i) };
         let val:u8 = unsafe {
             core::ptr::read((start + i) as *const u8)
         };
-        rprint!("{:02x} ", val);
+        rprint!("{:02x}", val);
+        if i%2 == 1 { rprint!(" ") };
     };
     rprint!("\n> ");
 }
 
-fn write_mem(s: &[u8]) {
+fn write_mem(_s: &[u8]) {
 }
