@@ -32,13 +32,25 @@ kukumba! (
 
     #[scenario_02]
     having "example parse_px() inputs" {
-        let goodcmd:[u8;11] = *b"px 20 @0x42";
+        let goodcmd1:[u8;11] = *b"px 20 @0x42";
+        let goodcmd2:[u8;8] = *b"px @0x42";
+        let goodcmd3:[u8;8] = *b"px    20";
+        let goodcmd4:[u8;2] = *b"px";
     }
     testing "parse_px() function" {
-        let res = parse_px(&goodcmd, (55,66));
+        let res = parse_px(&goodcmd1, (55,66));
         assert_eq!(res.is_ok(), true);
         let res = res.unwrap();
-        assert_eq!(res.0, 55);
+        assert_eq!(res.0, 20);
         assert_eq!(res.1, 0x42);
+        let res = parse_px(&goodcmd2, (55,66));
+        assert_eq!(res.is_ok(), true);
+        assert_eq!(res.unwrap(), (55, 0x42));
+        let res = parse_px(&goodcmd3, (55,66));
+        assert_eq!(res.is_ok(), true);
+        assert_eq!(res.unwrap(), (20, 66));
+        let res = parse_px(&goodcmd4, (55,66));
+        assert_eq!(res.is_ok(), true);
+        assert_eq!(res.unwrap(), (55, 66));
     }
 );

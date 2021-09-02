@@ -20,11 +20,17 @@ pub fn parse_address(s: &[u8]) -> Result<u32,&[u8]> {
 }
 
 // generally, command parsed: "px {} @{}"
-pub fn parse_px(s: &[u8], defaults: (u32,u32)) -> Result<(u32,u32),&[u8]>
-    {
-    let addr = s.split(|c| *c==b'@').last();
+pub fn parse_px(s: &[u8], defaults: (u32,u32)) -> Result<(u32,u32),&[u8]> {
+    let mut iter_at = s.split(|c| *c==b'@');
+    let mut iter_space = iter_at.next().unwrap().split(|c| *c==b' ');
+    // start address
+    let addr = iter_at.last();
     let start = if addr == None { defaults.1 } else { parse_address(addr.unwrap())? };
-    //FIXME: process 1st value
-    Ok((defaults.0,start))
+    // len
+    iter_space.next(); // consume command "px"
+    let mut addr = iter_space.next();
+    while addr.is_some() && addr.unwrap().len() == 0 { addr = iter_space.next() };
+    let len = if addr == None { defaults.0 } else { parse_address(addr.unwrap())? };
+    Ok((len,start))
 }
 
