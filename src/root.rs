@@ -3,6 +3,8 @@ use rtt_target::{rprint, rprintln};
 #[path = "text_parser.rs"]
 mod text_parser;
 use text_parser::*;
+#[path = "gpio.rs"]
+mod gpio;
 
 // Common for all submenus
 pub struct ExecContext {
@@ -19,15 +21,24 @@ impl ExecContext {
             idle_fn: idle,
         }
     }
+    pub fn set_handlers(&mut self,
+        print_menu_fn: fn(),
+        execute_fn: fn(&[u8], &mut ExecContext),
+        idle_fn: fn() ) {
+        self.print_menu_fn = print_menu_fn;
+        self.execute_fn = execute_fn;
+        self.idle_fn = idle_fn;
+        self.print_menu();
+    }
 
     pub fn print_menu(&self) {
-        (self.print_menu_fn)();
+        (self.print_menu_fn)()
     }
     pub fn execute(&mut self, s: &[u8]) {
-        (self.execute_fn)(s, self);
+        (self.execute_fn)(s, self)
     }
     pub fn idle(&mut self) {
-        (self.idle_fn)();
+        (self.idle_fn)()
     }
 }
 
@@ -36,20 +47,22 @@ pub fn print_menu() {
     rprint!(concat!(
         "HW monitor, version 0.01 \n",
         "Main menu: \n",
-        "  h or ?: \tprint this menu prompt \n",
+        "  h or ?: \t print this menu prompt \n",
         "  r: \t return to main menu \n",
         "  px N @addr: \t hexdump of N bytes at(@) address \n",
         "    example: px 4 @0x72000 \n",
+        "  g: \t GPIO \n",
         "\n> "));
 }
 
-pub fn execute(s: &[u8], _context: &mut ExecContext) {
+pub fn execute(s: &[u8], context: &mut ExecContext) {
     match s[0] {
         b'h' => print_menu(),
         b'?' => print_menu(),
         b'r' => print_menu(),
         b'p' => hexdump(s),
         b'w' => write_mem(s),
+        b'g' => context.set_handlers(gpio::print_menu, gpio::execute, gpio::idle),
         _ => { rprintln!("unknown command"); print_menu(); },
     }
 }
@@ -73,5 +86,6 @@ fn hexdump(s: &[u8]) {
     rprint!("\n> ");
 }
 
+//TODO:
 fn write_mem(_s: &[u8]) {
 }
