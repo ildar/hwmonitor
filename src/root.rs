@@ -1,4 +1,5 @@
-use nrf52832_hal as _;
+use core::cell::RefCell;
+use nrf52832_hal as hal;
 use rtt_target::{rprint, rprintln};
 #[path = "text_parser.rs"]
 mod text_parser;
@@ -10,7 +11,12 @@ mod gpio;
 pub struct ExecContext {
     print_menu_fn: fn(),
     execute_fn: fn(&[u8], &mut ExecContext),
-    idle_fn: fn(),
+    idle_fn: fn(& ExecContext),
+    pub input_pin: RefCell<Option<
+        hal::gpio::Pin <
+            hal::gpio::Input<hal::gpio::Floating>
+        >
+    >>,
 }
 
 impl ExecContext {
@@ -19,12 +25,13 @@ impl ExecContext {
             print_menu_fn: print_menu,
             execute_fn: execute,
             idle_fn: idle,
+            input_pin: RefCell::new(None),
         }
     }
     pub fn set_handlers(&mut self,
         print_menu_fn: fn(),
         execute_fn: fn(&[u8], &mut ExecContext),
-        idle_fn: fn() ) {
+        idle_fn: fn(&ExecContext) ) {
         self.print_menu_fn = print_menu_fn;
         self.execute_fn = execute_fn;
         self.idle_fn = idle_fn;
@@ -37,8 +44,8 @@ impl ExecContext {
     pub fn execute(&mut self, s: &[u8]) {
         (self.execute_fn)(s, self)
     }
-    pub fn idle(&mut self) {
-        (self.idle_fn)()
+    pub fn idle(&self) {
+        (self.idle_fn)(self)
     }
 }
 
@@ -67,7 +74,7 @@ pub fn execute(s: &[u8], context: &mut ExecContext) {
     }
 }
 
-pub fn idle() {
+pub fn idle(_: & ExecContext) {
     //rprint!(".");
 }
 
