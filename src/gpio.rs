@@ -12,7 +12,7 @@ pub fn print_menu() {
         "  h or ?: \t print this menu prompt \n",
         "  r: \t return to main menu \n",
         "  g gpio#: \t set GPIO pin to read",
-        "\n> "));
+        ""));
 }
 
 pub fn execute(s: &[u8], context: &mut ExecContext) {
@@ -35,14 +35,8 @@ pub fn idle(context: &ExecContext) {
 
 fn read_gpio(s: &[u8], context: &mut ExecContext) {
     let _ = context.input_pin.replace(None); // discard this pin
-    let mut iter = s.split(|c| *c == b' ');
-    iter.next(); // skip command
-    let mut gpiono = iter.next();
-    while gpiono.is_some() && gpiono.unwrap().len() == 0 { gpiono = iter.next(); };
-    if gpiono == None { return; };
-    let gpiono = parse_address(gpiono.unwrap());
-    if gpiono.is_err() {
-        rprintln!("wrong gpio#");
+    let (gpiono,) = parse_g(s);
+    if gpiono == None || gpiono.unwrap() > 31 {
         return;
     }
 

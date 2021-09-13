@@ -35,7 +35,7 @@ kukumba! (
         let goodcmd1:[u8;11] = *b"px 20 @0x42";
         let goodcmd2:[u8;8] = *b"px @0x42";
         let goodcmd3:[u8;8] = *b"px    20";
-        let goodcmd4:[u8;2] = *b"px";
+        let goodcmd4:[u8;1] = *b"p";
     }
     testing "parse_px() function" {
         let res = parse_px(&goodcmd1, (55,66));
@@ -53,4 +53,26 @@ kukumba! (
         assert_eq!(res.is_ok(), true);
         assert_eq!(res.unwrap(), (55, 66));
     }
+
+    #[scenario_03]
+    having "example parse_g() inputs" {
+        let goodcmd1:[u8;4] = *b"g 20";
+        let goodcmd2:[u8;6] = *b"g 0x42";
+        let goodcmd3:[u8;6] = *b"g   20";
+        let goodcmd4:[u8;1] = *b"g";
+    }
+    testing "parse_px() function" {
+        let (res,) = parse_g(&goodcmd1);
+        assert_ne!(res, None);
+        assert_eq!(res.unwrap(), 20);
+        let (res,) = parse_g(&goodcmd2);
+        assert_ne!(res, None);
+        assert_eq!(res.unwrap(), 0x42);
+        let (res,) = parse_g(&goodcmd3);
+        assert_ne!(res, None);
+        assert_eq!(res.unwrap(), 20);
+        let (res,) = parse_g(&goodcmd4);
+        assert_eq!(res, None);
+    }
+
 );
