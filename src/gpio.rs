@@ -11,7 +11,8 @@ pub fn print_menu() {
         "GPIO menu: \n",
         "  h or ?: \t print this menu prompt \n",
         "  r: \t return to main menu \n",
-        "  g gpio#: \t set GPIO pin to read",
+        "  g gpio#: \t set GPIO pin to read \n",
+        "  G gpio# val: \t set ping high (1) or low (0) \n",
         ""));
 }
 
@@ -24,6 +25,7 @@ pub fn execute(s: &[u8], context: &mut ExecContext) {
                 context.set_handlers(super::print_menu, super::execute, super::idle);
             },
         b'g' => read_gpio(s, context),
+        b'G' => write_gpio(s, context),
         _ => { rprintln!("unknown command"); print_menu(); },
     }
 }
@@ -39,17 +41,32 @@ pub fn idle(context: &ExecContext) {
 fn read_gpio(s: &[u8], context: &mut ExecContext) {
     let pin = context.input_pin.replace(None);
     if pin.is_some() { pin.unwrap().into_disconnected(); }; // discard this pin
-    let (gpiono,) = parse_g(s);
+    let (gpiono,_) = parse_g(s);
     if gpiono == None || gpiono.unwrap() > 31 {
         return;
-    }
+    };
 
     let pin = unsafe { Pin::<Disconnected>::from_psel_bits(gpiono.unwrap())}
         .into_floating_input();
     context.input_pin.replace(Some(pin));
 }
 
+fn write_gpio(s: &[u8], context: &mut ExecContext) {
+    let pin = context.output_pin.replace(None);
+    if pin.is_some() { pin.unwrap().into_disconnected(); }; // discard this pin
+    let (gpiono,state) = parse_g(s);
+    if gpiono == None || gpiono.unwrap() > 31 {
+        return;
+    };
+    let state = if state.is_none() || state.unwrap() == 0 { Level::Low } else { Level::High };
+
+    let pin = unsafe { Pin::<Disconnected>::from_psel_bits(gpiono.unwrap())}
+        .into_push_pull_output(state);
+    context.output_pin.replace(Some(pin));
+}
+
 fn release_gpios(context: &mut ExecContext) {
     read_gpio(b"", context);
+    write_gpio(b"", context);
 }
 

@@ -17,6 +17,11 @@ pub struct ExecContext {
             hal::gpio::Input<hal::gpio::Floating>
         >
     >>,
+    pub output_pin: RefCell<Option<
+        hal::gpio::Pin <
+            hal::gpio::Output<hal::gpio::PushPull>
+        >
+    >>,
 }
 
 impl ExecContext {
@@ -26,6 +31,7 @@ impl ExecContext {
             execute_fn: execute,
             idle_fn: idle,
             input_pin: RefCell::new(None),
+            output_pin: RefCell::new(None),
         }
     }
     pub fn set_handlers(&mut self,
@@ -59,7 +65,7 @@ pub fn print_menu() {
         "  px N @addr: \t hexdump of N bytes at(@) address \n",
         "    example: px 4 @0x72000 \n",
         "  g: \t GPIO \n",
-        "\n> "));
+        ""));
 }
 
 pub fn execute(s: &[u8], context: &mut ExecContext) {
@@ -90,7 +96,6 @@ fn hexdump(s: &[u8]) {
         rprint!("{:02x}", val);
         if i%2 == 1 { rprint!(" ") };
     };
-    rprint!("\n> ");
 }
 
 //TODO:

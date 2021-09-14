@@ -60,19 +60,23 @@ kukumba! (
         let goodcmd2:[u8;6] = *b"g 0x42";
         let goodcmd3:[u8;6] = *b"g   20";
         let goodcmd4:[u8;1] = *b"g";
+        let goodcmd5:[u8;8] = *b"G 0x42 1";
     }
-    testing "parse_px() function" {
-        let (res,) = parse_g(&goodcmd1);
+    testing "parse_g() function" {
+        let (res,_) = parse_g(&goodcmd1);
         assert_ne!(res, None);
         assert_eq!(res.unwrap(), 20);
-        let (res,) = parse_g(&goodcmd2);
+        let (res,_) = parse_g(&goodcmd2);
         assert_ne!(res, None);
         assert_eq!(res.unwrap(), 0x42);
-        let (res,) = parse_g(&goodcmd3);
+        let (res,_) = parse_g(&goodcmd3);
         assert_ne!(res, None);
         assert_eq!(res.unwrap(), 20);
-        let (res,) = parse_g(&goodcmd4);
+        let (res,_) = parse_g(&goodcmd4);
         assert_eq!(res, None);
+        let (res,res2) = parse_g(&goodcmd5);
+        assert_eq!(res.unwrap(), 0x42);
+        assert_eq!(res2.unwrap(), 1);
     }
 
 );

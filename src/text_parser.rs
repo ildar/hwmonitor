@@ -34,15 +34,19 @@ pub fn parse_px(s: &[u8], defaults: (u32,u32)) -> Result<(u32,u32),&[u8]> {
     Ok((len,start))
 }
 
-pub fn parse_g(s: &[u8]) -> (Option<u32>,) {
+pub fn parse_g(s: &[u8]) -> (Option<u32>,Option<u32>) {
     let mut iter = s.split(|c| *c == b' ');
     iter.next(); // skip command
     let mut arg = iter.next();
     while arg.is_some() && arg.unwrap().len() == 0 { arg = iter.next(); };
-    if arg == None { return (None,); };
+    if arg == None { return (None,None); };
     let arg = parse_address(arg.unwrap());
-    if arg.is_err() {
-        return (None,);
-    }
-    ( Some(arg.unwrap()), )
+    if arg.is_err() { return (None,None); };
+
+    let mut arg2 = iter.next();
+    while arg2.is_some() && arg2.unwrap().len() == 0 { arg2 = iter.next(); };
+    if arg2 == None { return (Some(arg.unwrap()),None); };
+    let arg2 = parse_address(arg2.unwrap());
+    if arg2.is_err() { return (Some(arg.unwrap()),None); };
+    ( Some(arg.unwrap()), Some(arg2.unwrap()) )
 }
