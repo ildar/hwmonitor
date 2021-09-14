@@ -19,22 +19,26 @@ pub fn execute(s: &[u8], context: &mut ExecContext) {
     match s[0] {
         b'h' => print_menu(),
         b'?' => print_menu(),
-        b'r' => context.set_handlers(super::print_menu, super::execute, super::idle),
+        b'r' => {
+                release_gpios(context);
+                context.set_handlers(super::print_menu, super::execute, super::idle);
+            },
         b'g' => read_gpio(s, context),
         _ => { rprintln!("unknown command"); print_menu(); },
     }
 }
 
 pub fn idle(context: &ExecContext) {
-    let pin = context.input_pin.replace(None);
-    if pin.is_none() { return; };
-    let the_pin = pin.unwrap();
+    let pin = context.input_pin.borrow();
+    let the_pin = if pin.is_none() { return; } else {
+        pin.as_ref().unwrap()
+    };
     rprintln!("GPIO: {}={}", the_pin.pin(), the_pin.is_high().unwrap());
-    context.input_pin.replace(Some(the_pin));
 }
 
 fn read_gpio(s: &[u8], context: &mut ExecContext) {
-    let _ = context.input_pin.replace(None); // discard this pin
+    let pin = context.input_pin.replace(None);
+    if pin.is_some() { pin.unwrap().into_disconnected(); }; // discard this pin
     let (gpiono,) = parse_g(s);
     if gpiono == None || gpiono.unwrap() > 31 {
         return;
@@ -44,3 +48,8 @@ fn read_gpio(s: &[u8], context: &mut ExecContext) {
         .into_floating_input();
     context.input_pin.replace(Some(pin));
 }
+
+fn release_gpios(context: &mut ExecContext) {
+    read_gpio(b"", context);
+}
+
