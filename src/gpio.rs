@@ -58,6 +58,16 @@ fn write_gpio(s: &[u8], context: &mut ExecContext) {
     if gpiono == None || gpiono.unwrap() > 31 {
         return;
     };
+    { // unset input pin if user demands to output it
+        let pin = context.input_pin.borrow();
+        let the_pin = if pin.is_none() { return; } else {
+            pin.as_ref().unwrap()
+        };
+        if the_pin.pin() as u32 == gpiono.unwrap() {
+            let pin = context.input_pin.replace(None);
+            if pin.is_some() { pin.unwrap().into_disconnected(); }; // discard this pin
+        }
+    };
     let state = if state.is_none() || state.unwrap() == 0 { Level::Low } else { Level::High };
 
     let pin = unsafe { Pin::<Disconnected>::from_psel_bits(gpiono.unwrap())}
