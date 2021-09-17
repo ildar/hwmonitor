@@ -6,6 +6,8 @@ mod text_parser;
 use text_parser::*;
 #[path = "gpio.rs"]
 mod gpio;
+#[path = "i2c.rs"]
+mod i2c;
 
 // Common for all submenus
 pub struct ExecContext {
@@ -65,6 +67,7 @@ pub fn print_menu() {
         "  px N @addr: \t hexdump of N bytes at(@) address \n",
         "    example: px 4 @0x72000 \n",
         "  g: \t GPIO \n",
+        "  i: \t i2c \n",
         ""));
 }
 
@@ -76,6 +79,7 @@ pub fn execute(s: &[u8], context: &mut ExecContext) {
         b'p' => hexdump(s),
         b'w' => write_mem(s),
         b'g' => context.set_handlers(gpio::print_menu, gpio::execute, gpio::idle),
+        b'i' => context.set_handlers(i2c::print_menu, i2c::execute, i2c::idle),
         _ => { rprintln!("unknown command"); print_menu(); },
     }
 }
