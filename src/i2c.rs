@@ -3,7 +3,7 @@ use hal::twim::*;
 use hal::gpio::{ Pin, Disconnected };
 use rtt_target::{rprint, rprintln};
 use super::ExecContext;
-//use super::text_parser::*;
+use super::text_parser::*;
 
 // i2c menu
 pub fn print_menu() {
@@ -31,10 +31,17 @@ pub fn execute(s: &[u8], context: &mut ExecContext) {
 pub fn idle(_context: &ExecContext) {
 }
 
-fn scan_i2c(_s: &[u8], _context: &mut ExecContext) {
-    let scl = unsafe { Pin::<Disconnected>::from_psel_bits(7)} // for P8 & PineTime
+fn scan_i2c(s: &[u8], _context: &mut ExecContext) {
+    let mut args = [None; 2]; let mut __ = None;
+    parse_command(s, &mut args, &mut __);
+    if args[0] == None || args[0].unwrap() > 31 ||
+       args[1] == None || args[1].unwrap() > 31 {
+        rprintln!("Wrong pin numbers format");
+        return;
+    };
+    let scl = unsafe { Pin::<Disconnected>::from_psel_bits(args[0].unwrap())}
         .into_floating_input();
-    let sda = unsafe { Pin::<Disconnected>::from_psel_bits(6)}
+    let sda = unsafe { Pin::<Disconnected>::from_psel_bits(args[1].unwrap())}
         .into_floating_input();
     let periph = hal::pac::Peripherals::take().unwrap();
     let mut bus = Twim::new(periph.TWIM0, Pins { scl, sda }, Frequency::K100);
