@@ -41,12 +41,13 @@ pub fn idle(context: &ExecContext) {
 fn read_gpio(s: &[u8], context: &mut ExecContext) {
     let pin = context.input_pin.replace(None);
     if pin.is_some() { pin.unwrap().into_disconnected(); }; // discard this pin
-    let (gpiono,_) = parse_g(s);
-    if gpiono == None || gpiono.unwrap() > 31 {
+    let mut args = [None; 1]; let mut __ = None;
+    parse_command(s, &mut args, &mut __);
+    if args[0] == None || args[0].unwrap() > 31 {
         return;
     };
 
-    let pin = unsafe { Pin::<Disconnected>::from_psel_bits(gpiono.unwrap())}
+    let pin = unsafe { Pin::<Disconnected>::from_psel_bits(args[0].unwrap())}
         .into_floating_input();
     context.input_pin.replace(Some(pin));
 }
@@ -54,8 +55,9 @@ fn read_gpio(s: &[u8], context: &mut ExecContext) {
 fn write_gpio(s: &[u8], context: &mut ExecContext) {
     let pin = context.output_pin.replace(None);
     if pin.is_some() { pin.unwrap().into_disconnected(); }; // discard this pin
-    let (gpiono,state) = parse_g(s);
-    if gpiono == None || gpiono.unwrap() > 31 {
+    let mut args = [None; 2]; let mut __ = None;
+    parse_command(s, &mut args, &mut __);
+    if args[0] == None || args[0].unwrap() > 31 {
         return;
     };
     { // unset input pin if user demands to output it
@@ -63,14 +65,14 @@ fn write_gpio(s: &[u8], context: &mut ExecContext) {
         let the_pin = if pin.is_none() { return; } else {
             pin.as_ref().unwrap()
         };
-        if the_pin.pin() as u32 == gpiono.unwrap() {
+        if the_pin.pin() as u32 == args[0].unwrap() {
             let pin = context.input_pin.replace(None);
             if pin.is_some() { pin.unwrap().into_disconnected(); }; // discard this pin
         }
     };
-    let state = if state.is_none() || state.unwrap() == 0 { Level::Low } else { Level::High };
+    let state = if args[1].is_none() || args[1].unwrap() == 0 { Level::Low } else { Level::High };
 
-    let pin = unsafe { Pin::<Disconnected>::from_psel_bits(gpiono.unwrap())}
+    let pin = unsafe { Pin::<Disconnected>::from_psel_bits(args[0].unwrap())}
         .into_push_pull_output(state);
     context.output_pin.replace(Some(pin));
 }

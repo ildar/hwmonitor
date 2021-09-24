@@ -31,52 +31,39 @@ kukumba! (
     }
 
     #[scenario_02]
-    having "example parse_px() inputs" {
+    having "example parse_command() inputs" {
         let goodcmd1:[u8;11] = *b"px 20 @0x42";
         let goodcmd2:[u8;8] = *b"px @0x42";
         let goodcmd3:[u8;8] = *b"px    20";
         let goodcmd4:[u8;1] = *b"p";
-    }
-    testing "parse_px() function" {
-        let res = parse_px(&goodcmd1, (55,66));
-        assert_eq!(res.is_ok(), true);
-        let res = res.unwrap();
-        assert_eq!(res.0, 20);
-        assert_eq!(res.1, 0x42);
-        let res = parse_px(&goodcmd2, (55,66));
-        assert_eq!(res.is_ok(), true);
-        assert_eq!(res.unwrap(), (55, 0x42));
-        let res = parse_px(&goodcmd3, (55,66));
-        assert_eq!(res.is_ok(), true);
-        assert_eq!(res.unwrap(), (20, 66));
-        let res = parse_px(&goodcmd4, (55,66));
-        assert_eq!(res.is_ok(), true);
-        assert_eq!(res.unwrap(), (55, 66));
-    }
-
-    #[scenario_03]
-    having "example parse_g() inputs" {
-        let goodcmd1:[u8;4] = *b"g 20";
-        let goodcmd2:[u8;6] = *b"g 0x42";
-        let goodcmd3:[u8;6] = *b"g   20";
-        let goodcmd4:[u8;1] = *b"g";
         let goodcmd5:[u8;8] = *b"G 0x42 1";
+        let badcmd1:[u8;13] = *b"g a r b a g e";
     }
-    testing "parse_g() function" {
-        let (res,_) = parse_g(&goodcmd1);
-        assert_ne!(res, None);
-        assert_eq!(res.unwrap(), 20);
-        let (res,_) = parse_g(&goodcmd2);
-        assert_ne!(res, None);
-        assert_eq!(res.unwrap(), 0x42);
-        let (res,_) = parse_g(&goodcmd3);
-        assert_ne!(res, None);
-        assert_eq!(res.unwrap(), 20);
-        let (res,_) = parse_g(&goodcmd4);
-        assert_eq!(res, None);
-        let (res,res2) = parse_g(&goodcmd5);
-        assert_eq!(res.unwrap(), 0x42);
-        assert_eq!(res2.unwrap(), 1);
+    testing "parse_command() function" {
+        let mut out = [None; 4];
+        let mut addr = None;
+        parse_command(&goodcmd1, &mut out, &mut addr);
+        assert_eq!(addr, Some(0x42));
+        assert_eq!(out[0], Some(20));
+        assert_eq!(out[1], None);
+        out = [None; 4]; parse_command(&goodcmd2, &mut out, &mut addr);
+        assert_eq!(addr, Some(0x42));
+        assert_eq!(out[0], None);
+        out = [None; 4]; parse_command(&goodcmd3, &mut out, &mut addr);
+        assert_eq!(addr, None);
+        assert_eq!(out[0], Some(20));
+        assert_eq!(out[1], None);
+        out = [None; 4]; parse_command(&goodcmd4, &mut out, &mut addr);
+        assert_eq!(addr, None);
+        assert_eq!(out[0], None);
+        out = [None; 4]; parse_command(&goodcmd5, &mut out, &mut addr);
+        assert_eq!(addr, None);
+        assert_eq!(out[0], Some(0x42));
+        assert_eq!(out[1], Some(1));
+        assert_eq!(out[2], None);
+        out = [None; 4]; parse_command(&badcmd1, &mut out, &mut addr);
+        assert_eq!(addr, None);
+        assert_eq!(out[0], None);
     }
 
 );

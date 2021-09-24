@@ -89,9 +89,10 @@ pub fn idle(_: & ExecContext) {
 }
 
 fn hexdump(s: &[u8]) {
-    let res = parse_px(s, (256,0x0));
-    if res.is_err() { rprintln!("Failed to parse `px` command"); return; }
-    let (count, start) = res.unwrap();
+    let mut args = [None; 1]; let mut addr = None;
+    parse_command(s, &mut args, &mut addr);
+    let count = args[0].unwrap_or(256);
+    let start = addr.unwrap_or(0x0);
     for i in 0..count {
         if i%16 == 0 { rprint!("\n0x{:08x} ", start+i) };
         let val:u8 = unsafe {
