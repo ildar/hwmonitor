@@ -20,6 +20,13 @@ pub struct ExecContext {
         >
     >>,
     pub out_pins: [Option<u32>;4],
+    // either twim_hw or twim_instance contains a value
+    pub twim_hw: RefCell<Option<
+        hal::pac::TWIM0
+    >>,
+    pub twim_instance: RefCell<Option<
+        hal::twim::Twim <nrf52832_hal::pac::TWIM0>
+    >>,
 }
 
 impl ExecContext {
@@ -30,6 +37,8 @@ impl ExecContext {
             idle_fn: idle,
             input_pin: RefCell::new(None),
             out_pins: [None;4],
+            twim_hw: RefCell::new(None),
+            twim_instance: RefCell::new(None),
         }
     }
     pub fn set_handlers(&mut self,
