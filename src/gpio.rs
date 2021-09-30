@@ -47,14 +47,13 @@ fn read_gpio(s: &[u8], context: &mut ExecContext) {
         return;
     };
 
-    let pin = unsafe { Pin::<Disconnected>::from_psel_bits(args[0].unwrap())}
+    let pin = unsafe { Pin::<Disconnected>::from_psel_bits(args[0].unwrap()) }
         .into_floating_input();
     context.input_pin.replace(Some(pin));
 }
 
 fn write_gpio(s: &[u8], context: &mut ExecContext) {
-    let pin = context.output_pin.replace(None);
-    if pin.is_some() { pin.unwrap().into_disconnected(); }; // discard this pin
+    context.release_out_pins();
     let mut args = [None; 2]; let mut __ = None;
     parse_command(s, &mut args, &mut __);
     if args[0] == None || args[0].unwrap() > 31 {
@@ -72,13 +71,13 @@ fn write_gpio(s: &[u8], context: &mut ExecContext) {
     };
     let state = if args[1].is_none() || args[1].unwrap() == 0 { Level::Low } else { Level::High };
 
-    let pin = unsafe { Pin::<Disconnected>::from_psel_bits(args[0].unwrap())}
+    unsafe { Pin::<Disconnected>::from_psel_bits(args[0].unwrap())}
         .into_push_pull_output(state);
-    context.output_pin.replace(Some(pin));
+    context.out_pins[0] = args[0];
 }
 
 fn release_gpios(context: &mut ExecContext) {
     read_gpio(b"", context);
-    write_gpio(b"", context);
+    context.release_out_pins();
 }
 
