@@ -66,4 +66,11 @@ fn main() -> ! {
 fn initial_diags() {
     // RTT working? just print and see!
     rprintln!("HW monitor demo starting");
+
+    rprint!("Checking last reset reason.. ");
+    let power_reg = hal::pac::POWER::ptr();
+    let p = unsafe { (*power_reg).resetreas.read() };
+    rprintln!("0x{:08x}", p.bits());
+
+    rprint!("\n");
 }
