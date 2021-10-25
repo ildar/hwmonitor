@@ -37,6 +37,7 @@ fn main() -> ! {
     // get some peripherals for use
     let periph = hal::pac::Peripherals::take().unwrap();
     exec_context.twim_hw.replace(Some(periph.TWIM0));
+    set_clocks();
 
     // start interactive loop
     exec_context.print_menu();
@@ -73,4 +74,49 @@ fn initial_diags() {
     rprintln!("0x{:08x}", p.bits());
 
     rprint!("\n");
+}
+
+fn set_clocks() {
+    rprint!("Checking system clock.. ");
+    let clock_reg = hal::pac::CLOCK::ptr();
+    let hfclkstat = unsafe { (*clock_reg).hfclkstat.read() };
+    rprint!("hfclkstat=0x{:08x} ", hfclkstat.bits());
+    let lfclkstat = unsafe { (*clock_reg).lfclkstat.read() };
+    rprintln!("lfclkstat=0x{:08x} ", lfclkstat.bits());
+
+    rprint!("Switching HF clock to external.. ");
+    unsafe {
+        (*clock_reg).tasks_hfclkstart.write(|w| w.bits(1));
+    };
+    cortex_m::asm::delay(1_000_000); // more then 0.36ms (per datasheet)
+    rprintln!("done.");
+
+    rprint!("Switching LF clock to external.. ");
+    unsafe {
+        (*clock_reg).tasks_lfclkstop.write(|w| w.bits(1));
+        (*clock_reg).lfclksrc
+            .write(move |w| w.src().xtal().bypass().bit(false).external().bit(true));
+        (*clock_reg).tasks_lfclkstart.write(|w| w.bits(1));
+    };
+    cortex_m::asm::delay(36_000_000); // more then 0.25s (per datasheet)
+    rprintln!("done.");
+
+    if lfclkstat.state() == hal::pac::clock::lfclkstat::STATE_A::NOTRUNNING {
+        rprint!("External LF clock failed, switching to internal.. ");
+        unsafe {
+            (*clock_reg).tasks_lfclkstop.write(|w| w.bits(1));
+            (*clock_reg).lfclksrc
+                .write(move |w| w.src().rc());
+            (*clock_reg).tasks_lfclkstart.write(|w| w.bits(1));
+        };
+        cortex_m::asm::delay(36_000_000); // more then 0.25s (per datasheet)
+        rprintln!("done.");
+    }
+
+    rprint!("Checking system clock (again).. ");
+    let clock_reg = hal::pac::CLOCK::ptr();
+    let hfclkstat = unsafe { (*clock_reg).hfclkstat.read() };
+    rprint!("hfclkstat=0x{:08x} ", hfclkstat.bits());
+    let lfclkstat = unsafe { (*clock_reg).lfclkstat.read() };
+    rprintln!("lfclkstat=0x{:08x} ", lfclkstat.bits());
 }
