@@ -98,6 +98,7 @@ pub fn execute(s: &[u8], context: &mut ExecContext) {
         b'g' => context.set_handlers(gpio::print_menu, gpio::execute, gpio::idle),
         b'i' => context.set_handlers(i2c::print_menu, i2c::execute, i2c::idle),
         b'R' => reset_mcu(),
+        b'#' => (),
         _ => { rprintln!("unknown command"); print_menu(); },
     }
 }

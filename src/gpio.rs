@@ -12,7 +12,7 @@ pub fn print_menu() {
         "  h or ?: \t print this menu prompt \n",
         "  r: \t return to main menu \n",
         "  g gpio#: \t set GPIO pin to read \n",
-        "  G gpio# val: \t set ping high (1) or low (0) \n",
+        "  G gpio# val: \t set pin high (1) or low (0) \n",
         ""));
 }
 
@@ -26,6 +26,7 @@ pub fn execute(s: &[u8], context: &mut ExecContext) {
             },
         b'g' => read_gpio(s, context),
         b'G' => write_gpio(s, context),
+        b'#' => (),
         _ => { rprintln!("unknown command"); print_menu(); },
     }
 }

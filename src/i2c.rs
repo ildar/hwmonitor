@@ -24,6 +24,7 @@ pub fn execute(s: &[u8], context: &mut ExecContext) {
                 context.set_handlers(super::print_menu, super::execute, super::idle);
             },
         b'S' => scan_i2c(s, context),
+        b'#' => (),
         _ => { rprintln!("unknown command"); print_menu(); },
     }
 }
