@@ -80,6 +80,8 @@ pub fn print_menu() {
         "  r: \t return to main menu \n",
         "  px N @addr: \t hexdump of N bytes at(@) address \n",
         "    example: px 4 @0x72000 \n",
+        "  wx deadbeef @addr: \t write hex bytes 0xde_ad_be_ef at(@) address \n",
+        "----",
         "  g: \t GPIO \n",
         "  i: \t i2c \n",
         "  R: \t RESET MCU \n",
@@ -119,8 +121,18 @@ fn hexdump(s: &[u8]) {
     };
 }
 
-//TODO:
-fn write_mem(_s: &[u8]) {
+fn write_mem(s: &[u8]) {
+    let mut addr = None;
+    let bytes = parse_command_w_bytestream(s, &mut addr);
+    if addr.is_none() || addr.unwrap() < 0x2000_0000 {
+        rprintln!("wx error: can't write to flash area");
+    } else {
+        for (shift,b) in bytes.into_iter().enumerate() {
+            unsafe {
+                core::ptr::write((addr.unwrap()+(shift as u32)) as *mut u8, b);
+            }
+        }
+    }
 }
 
 fn reset_mcu() -> ! {
