@@ -36,4 +36,34 @@ pub fn parse_command(s: &[u8], out: &mut [Option<u32>], out_addr: &mut Option<u3
     };
 }
 
+use arrayvec::ArrayVec;
+
+// command sytax: "command hexbyte(s)1 hexbyte(s)2 ... @addr"
+pub fn parse_command_w_bytestream(s: &[u8], out_addr: &mut Option<u32>) -> ArrayVec<u8,32> {
+    let mut iter_at = s.split(|c| *c==b'@');
+    let mut iter_space = iter_at.next().unwrap().split(|c| *c==b' ');
+
+    *out_addr = (||{ parse_address(iter_at.last()?).ok() })();
+
+    iter_space.next(); // consume command
+
+    let mut buf = ArrayVec::<u8,32>::new();
+    let mut arg = iter_space.next();
+    while arg.is_some() {
+        arg.unwrap()
+            .chunks_exact(2)
+            .map(|xx| {
+                let temp = core::str::from_utf8(xx);
+                if temp.is_err() { return None; };
+                let temp = u32::from_str_radix(temp.unwrap(), 16);
+                if temp.is_err() { return None; };
+                Some(temp.unwrap() as u8)
+            })
+            .filter(|oo| oo.is_some())
+            .for_each(|nn| buf.push(nn.unwrap()));
+        arg = iter_space.next();
+    }
+    buf
+}
+
 

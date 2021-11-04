@@ -66,4 +66,39 @@ kukumba! (
         assert_eq!(out[0], None);
     }
 
+    #[scenario_03]
+    having "example parse_command_w_bytestream() inputs" {
+        let goodcmd1 = b"wx 20 @0x42";
+        let goodcmd2 = b"wx @0x42";
+        let goodcmd3 = b"wx    20";
+        let goodcmd4 = b"w 123456 78";
+        let goodcmd5 = b"w 123 456 78";
+        let badcmd1  = b"g a r b a g e";
+    }
+    testing "parse_command_w_bytestream() function" {
+        let mut addr = None;
+        let res = parse_command_w_bytestream(goodcmd1, &mut addr);
+        assert_eq!(addr, Some(0x42));
+        assert_eq!(res.len(), 1);
+        assert_eq!(res, [0x20][..]);
+        let res = parse_command_w_bytestream(goodcmd2, &mut addr);
+        assert_eq!(addr, Some(0x42));
+        assert_eq!(res.len(), 0);
+        let res = parse_command_w_bytestream(goodcmd3, &mut addr);
+        assert_eq!(addr, None);
+        assert_eq!(res.len(), 1);
+        assert_eq!(res, [0x20][..]);
+        let res = parse_command_w_bytestream(goodcmd4, &mut addr);
+        assert_eq!(addr, None);
+        assert_eq!(res.len(), 4);
+        assert_eq!(res, [0x12,0x34,0x56,0x78][..]);
+        let res = parse_command_w_bytestream(goodcmd5, &mut addr);
+        assert_eq!(addr, None);
+        assert_eq!(res.len(), 3);
+        assert_eq!(res, [0x12,0x45,0x78][..]);
+        let res = parse_command_w_bytestream(badcmd1, &mut addr);
+        assert_eq!(addr, None);
+        assert_eq!(res.len(), 0);
+    }
+
 );

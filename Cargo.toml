@@ -9,6 +9,7 @@ cortex-m-rt = "0.6.12"
 rtt-target = {version = "0.3.1", features = ["cortex-m"] }
 panic-rtt-target = { version = "0.1.2", features = ["cortex-m"] }
 nrf52832-hal = { version = "0.12.2", features = ["rt"] }
+arrayvec = { version = "0.7.2", default-features = false }
 
 [dependencies.embedded-hal]
 version = "0.2.3"
